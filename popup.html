@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Tracker</title>
+    <style>
+        /* Body styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9f8fa; /* Light gray background */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 350px;
+            color: #333; /* Darker text for better contrast */
+        }
+
+        h2 {
+            text-align: center;
+            color: #2196F3; /* Accent blue for the heading */
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        ul {
+            padding: 0;
+            list-style: none;
+            margin: 0;
+        }
+
+        /* Individual tab item styling */
+        .tab-item {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Alternate row colors */
+        .odd {
+            background-color: #b3eed6; /* Light gray for odd rows */
+        }
+
+        .even {
+            background-color: #cdc6ca; /* Slightly darker gray for even rows */
+        }
+
+        /* Hover effect */
+        .tab-item:hover {
+            background-color: #f1f1f1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tab name styling */
+        .tab-item strong {
+            font-size: 16px;
+            color: #333; /* Dark gray for tab names */
+        }
+
+        /* Time spent styling */
+        .time {
+            background-color: #2196F3; /* Accent blue for time */
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Empty state when no data */
+        .empty {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+
+        /* Smooth transition for content */
+        .tab-item, .empty {
+            transition: transform 0.3s ease;
+        }
+
+        /* Add a slight transform on hover for tab items */
+        .tab-item:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <h2>Tab Activity</h2>
+    <ul id="tabList"></ul>
+    <script src="popup.js"></script>
+</body>
+</html>

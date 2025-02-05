@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "Attention Tracker",
+    "version": "1.0",
+    "description": "Tracks how often users switch tabs and time spent on each.",
+    "permissions": ["tabs", "storage"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": "icon.png"
+    }
+  }
+  
