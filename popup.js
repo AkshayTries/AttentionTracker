@@ -5,16 +5,27 @@ document.addEventListener("DOMContentLoaded", () => {
         let list = document.getElementById("tabList");
         list.innerHTML = "";
 
-        if (Object.keys(domainTimes).length === 0) {
+        let totalTime = Object.values(domainTimes).reduce((acc, time) => acc + time, 0);
+
+        if (totalTime === 0) {
             list.innerHTML = "<li class='empty'>No data available yet.</li>";
         } else {
-            Object.keys(domainTimes).forEach((domain, index) => {
-                let timeSpentInSeconds = Math.round(domainTimes[domain] / 1000);
+            // Sort domains by time spent (descending order)
+            let sortedDomains = Object.entries(domainTimes)
+                .sort((a, b) => b[1] - a[1]);
+
+            sortedDomains.forEach(([domain, time], index) => {
+                let timeSpentInSeconds = Math.round(time / 1000);
                 let formattedTime = formatTime(timeSpentInSeconds);
+                let percentage = ((time / totalTime) * 100).toFixed(2); // Calculate percentage
 
                 let li = document.createElement("li");
-                li.classList.add("tab-item", index % 2 === 0 ? "odd" : "even");
-                li.innerHTML = `<strong>${domain}</strong><span class="time">${formattedTime}</span>`;
+                li.classList.add("tab-item");
+
+                // Set background gradient to reflect percentage
+                li.style.background = `linear-gradient(to right, #2196F3 ${percentage}%, #ccc ${percentage}%)`;
+
+                li.innerHTML = `<strong>${domain}</strong><span class="time">${formattedTime} (${percentage}%)</span>`;
                 list.appendChild(li);
             });
         }
@@ -39,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function formatTime(seconds) {
     if (seconds < 60) return `${seconds}s`;
     let minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
-    let hours = Math.floor(minutes / 60);
-    return `${hours}h ${minutes % 60}m`;
+    let remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
 }
