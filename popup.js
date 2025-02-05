@@ -1,42 +1,45 @@
 document.addEventListener("DOMContentLoaded", () => {
-    chrome.storage.local.get("domainTimes", data => {
-        let domainTimes = data.domainTimes || {};  
+    chrome.storage.local.get(["domainTimes", "logs"], data => {
+        let domainTimes = data.domainTimes || {};
+        let logs = data.logs || [];
         let list = document.getElementById("tabList");
-        list.innerHTML = "";  
+        list.innerHTML = "";
 
         if (Object.keys(domainTimes).length === 0) {
             list.innerHTML = "<li class='empty'>No data available yet.</li>";
         } else {
             Object.keys(domainTimes).forEach((domain, index) => {
-                let timeSpentInSeconds = Math.round(domainTimes[domain] / 1000);  
-
-                // Convert time to readable format
+                let timeSpentInSeconds = Math.round(domainTimes[domain] / 1000);
                 let formattedTime = formatTime(timeSpentInSeconds);
 
                 let li = document.createElement("li");
-                li.classList.add("tab-item");
-
-                // Alternate background color for styling
-                li.classList.add(index % 2 === 0 ? "odd" : "even");
-
+                li.classList.add("tab-item", index % 2 === 0 ? "odd" : "even");
                 li.innerHTML = `<strong>${domain}</strong><span class="time">${formattedTime}</span>`;
                 list.appendChild(li);
             });
         }
+
+        document.getElementById("downloadCsv").addEventListener("click", () => {
+            let csvContent = "data:text/csv;charset=utf-8,Website,Time Spent,Switched At\n";
+            
+            logs.forEach(row => {
+                csvContent += row.join(",") + "\n";
+            });
+
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "tab_activity.csv");
+            document.body.appendChild(link);
+            link.click();
+        });
     });
 });
 
-// Function to format time
 function formatTime(seconds) {
-    if (seconds < 60) {
-        return `${seconds}s`;
-    } else if (seconds < 3600) {
-        let minutes = Math.floor(seconds / 60);
-        let sec = seconds % 60;
-        return sec === 0 ? `${minutes}m` : `${minutes}m ${sec}s`;
-    } else {
-        let hours = Math.floor(seconds / 3600);
-        let minutes = Math.floor((seconds % 3600) / 60);
-        return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
-    }
+    if (seconds < 60) return `${seconds}s`;
+    let minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+    let hours = Math.floor(minutes / 60);
+    return `${hours}h ${minutes % 60}m`;
 }
