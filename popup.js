@@ -31,18 +31,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         document.getElementById("downloadCsv").addEventListener("click", () => {
-            let csvContent = "data:text/csv;charset=utf-8,Website,Time Spent,Switched At\n";
-            
-            logs.forEach(row => {
-                csvContent += row.join(",") + "\n";
-            });
+            chrome.storage.local.get("logs", data => {
+                let logs = data.logs || [];
+                let csvContent = "Website,Time Spent,Switched At\n";
 
-            let encodedUri = encodeURI(csvContent);
-            let link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "tab_activity.csv");
-            document.body.appendChild(link);
-            link.click();
+                logs.forEach(row => {
+                    csvContent += row.join(",") + "\n";
+                });
+
+                let blob = new Blob([csvContent], { type: "text/csv" });
+                let url = URL.createObjectURL(blob);
+
+                // Use chrome.downloads.download() for better compatibility
+                chrome.downloads.download({
+                    url: url,
+                    filename: "tab_activity.csv",
+                    saveAs: true
+                }, () => {
+                    URL.revokeObjectURL(url); // Clean up the URL after download
+                });
+            });
         });
     });
 });

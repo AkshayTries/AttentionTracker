@@ -3,13 +3,23 @@
     "name": "Attention Tracker",
     "version": "1.0",
     "description": "Tracks how often users switch tabs and time spent on each.",
-    "permissions": ["tabs", "storage"],
+    "permissions": ["tabs", "storage","downloads"],
     "background": {
       "service_worker": "background.js"
     },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": "icon.png"
-    }
+    "icons": {
+  "16": "icon16.png",
+  "48": "icon48.png",
+  "128": "icon128.png"
+},
+"action": {
+  "default_popup": "popup.html",
+  "default_icon": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
+
   }
   
