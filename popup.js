@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-    chrome.storage.local.get(["domainTimes", "workingTab"], data => {
+    chrome.storage.local.get("domainTimes", data => {
         let domainTimes = data.domainTimes || {};  
-        let workingTab = data.workingTab || null; 
         let list = document.getElementById("tabList");
         list.innerHTML = "";  
 
@@ -11,39 +10,33 @@ document.addEventListener("DOMContentLoaded", () => {
             Object.keys(domainTimes).forEach((domain, index) => {
                 let timeSpentInSeconds = Math.round(domainTimes[domain] / 1000);  
 
+                // Convert time to readable format
+                let formattedTime = formatTime(timeSpentInSeconds);
+
                 let li = document.createElement("li");
                 li.classList.add("tab-item");
 
-                if (index % 2 === 0) {
-                    li.classList.add('odd');
-                } else {
-                    li.classList.add('even');
-                }
+                // Alternate background color for styling
+                li.classList.add(index % 2 === 0 ? "odd" : "even");
 
-                // Create a small button for setting the working tab
-                let button = document.createElement("button");
-                button.textContent = workingTab === domain ? "✔" : "•";
-                button.style.backgroundColor = workingTab === domain ? "#4CAF50" : "#2196F3";
-                button.style.color = "#fff";
-                button.style.border = "none";
-                button.style.padding = "4px 8px";
-                button.style.borderRadius = "50%";
-                button.style.cursor = "pointer";
-                button.style.fontSize = "14px";
-                button.style.marginLeft = "10px";
-
-                button.onclick = () => setWorkingTab(domain);
-
-                li.innerHTML = `<strong>${domain}</strong> <span class="time">${timeSpentInSeconds} sec</span>`;
-                li.appendChild(button);
+                li.innerHTML = `<strong>${domain}</strong><span class="time">${formattedTime}</span>`;
                 list.appendChild(li);
             });
         }
     });
 });
 
-function setWorkingTab(domain) {
-    chrome.storage.local.set({ workingTab: domain }, () => {
-        location.reload();  
-    });
+// Function to format time
+function formatTime(seconds) {
+    if (seconds < 60) {
+        return `${seconds}s`;
+    } else if (seconds < 3600) {
+        let minutes = Math.floor(seconds / 60);
+        let sec = seconds % 60;
+        return sec === 0 ? `${minutes}m` : `${minutes}m ${sec}s`;
+    } else {
+        let hours = Math.floor(seconds / 3600);
+        let minutes = Math.floor((seconds % 3600) / 60);
+        return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
+    }
 }
