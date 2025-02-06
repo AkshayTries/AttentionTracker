@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Attention Tracker",
-    "version": "1.0",
-    "description": "Tracks how often users switch tabs and time spent on each.",
+    "name": "WebPulse - Track your browser activity",
+    "version": "3.0",
+    "description": "Find out how much time you waste on the internet",
     "permissions": ["tabs", "storage","downloads"],
     "background": {
       "service_worker": "background.js"

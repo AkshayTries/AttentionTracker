@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function formatTime(seconds) {
     if (seconds < 60) return `${seconds}s`;
     let minutes = Math.floor(seconds / 60);
-    let remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+    let hours = Math.floor(minutes / 60);
+    let remainingMinutes = minutes % 60;
+    return remainingMinutes === 0 ? `${hours}h` : `${hours}h ${remainingMinutes}m`;
 }
+
