@@ -30,45 +30,63 @@
         }
 
         .tab-item {
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .odd { background-color: #b3eed6; }
-        .even { background-color: #cdc6ca; }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
 
         .tab-item:hover {
             background-color: #f1f1f1;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .tab-item strong { font-size: 16px; color: #333; }
-        .time {
-            background-color: #2196F3;
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-        }
+        .tab-item strong {
+    font-size: 16px;
+    color: #333;
+    flex: 1; /* Allow the site name to grow */
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Show ellipsis for overflow */
+    max-width: 60%; /* Limit the width of the site name */
+}
+.time {
+    background-color: #2196F3;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 10px; /* Add spacing between time and button */
+}
 
         .empty {
             text-align: center;
             font-style: italic;
             color: #888;
         }
+        .hide-btn {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* Prevent the button from shrinking */
+}
 
-        .tab-item, .empty { transition: transform 0.3s ease; }
-        .tab-item:hover { transform: translateY(-3px); }
+.hide-btn:hover {
+    background-color: #cc0000;
+}
 
-        /* Download button */
-        .download-btn {
+        .button {
             display: block;
             width: 100%;
             margin-top: 15px;
@@ -83,15 +101,17 @@
             font-weight: bold;
         }
 
-        .download-btn:hover {
+        .button:hover {
             background-color: #1976D2;
         }
     </style>
 </head>
 <body>
     <h2>Tab Activity</h2>
+    <button id="resetHidden" class="button">Reset Hidden Sites</button>
+    <button id="downloadCsv" class="button">Download CSV</button>
+    <button id="moreStats" class="button">More Stats</button>
     <ul id="tabList"></ul>
-    <button id="downloadCsv" class="download-btn">Download CSV</button>
     <script src="popup.js"></script>
 </body>
 </html>
