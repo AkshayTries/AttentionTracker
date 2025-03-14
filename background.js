@@ -1,13 +1,31 @@
 let domainTimes = {};
 let activeTab = null;
 let startTime = null;
-let logs = [];  // Stores log entries for Excel
+let logs = [];
+let blockedSites = {};
 
 // Load stored data when extension starts
-chrome.storage.local.get(["domainTimes", "logs"], data => {
+chrome.storage.local.get(["domainTimes", "logs", "focusMode", "blockedSites"], data => {
     domainTimes = data.domainTimes || {};
     logs = data.logs || [];
+    blockedSites = data.blockedSites || {};  // Load blocked sites
 });
+
+// Listen for tab updates to check if a blocked site is accessed
+chrome.webNavigation.onBeforeNavigate.addListener(details => {
+    let url = new URL(details.url);
+    let domain = url.hostname.replace(/^www\./, ''); // Normalize domain
+
+    chrome.storage.local.get(["focusMode", "blockedSites"], data => {
+        let focusMode = data.focusMode || false;
+        let blockedSites = data.blockedSites || {};
+
+        if (focusMode && blockedSites[domain]) {
+            // Redirect to blocked.html
+            chrome.tabs.update(details.tabId, { url: chrome.runtime.getURL("blocked.html") });
+        }
+    });
+}, { urls: ["<all_urls>"] });
 
 // Handle tab switch
 chrome.tabs.onActivated.addListener(activeInfo => {
@@ -22,7 +40,7 @@ chrome.tabs.onActivated.addListener(activeInfo => {
                 domainTimes[domain] += timeSpent;
 
                 // Log the switch
-                let timestamp = new Date().toLocaleString(); // Get human-readable timestamp
+                let timestamp = new Date().toLocaleString();
                 logs.push([domain, formatTime(timeSpent), timestamp]);
 
                 // Save logs and updated time
@@ -35,7 +53,7 @@ chrome.tabs.onActivated.addListener(activeInfo => {
     startTime = Date.now();
 });
 
-// Convert time to minutes/hours
+// Convert time
 function formatTime(ms) {
     let seconds = Math.floor(ms / 1000);
     if (seconds < 60) return `${seconds} sec`;
@@ -45,12 +63,30 @@ function formatTime(ms) {
     return `${hours} hr ${minutes % 60} min`;
 }
 
-// Save data when Chrome is closing
-chrome.runtime.onSuspend.addListener(() => {
-    chrome.storage.local.set({ domainTimes, logs });
-});
-
 // Save periodically
 setInterval(() => {
     chrome.storage.local.set({ domainTimes, logs });
 }, 5000);
+
+// Intercept navigation and redirect blocked sites
+chrome.webNavigation.onBeforeNavigate.addListener(details => {
+    chrome.storage.local.get(["blockedSites", "focusMode"], data => {
+        let blockedSites = data.blockedSites || {};
+        let focusMode = data.focusMode || false;
+        
+        if (!focusMode) return; // Only block if Focus Mode is ON
+
+        try {
+            let url = new URL(details.url);
+            let domain = url.hostname.replace(/^www\./, '');
+
+            if (blockedSites[domain]) {
+                // Redirect to blocked.html
+                chrome.tabs.update(details.tabId, { url: chrome.runtime.getURL("blocked.html") });
+            }
+        } catch (e) {
+            console.error("Error processing URL: ", e);
+        }
+    });
+}, { urls: ["<all_urls>"] });
+

@@ -2,24 +2,32 @@
     "manifest_version": 3,
     "name": "WebPulse - Track your browser activity",
     "version": "3.0",
-    "description": "Find out how much time you waste on the internet",
-    "permissions": ["tabs", "storage","downloads"],
+    "description": "Find out how much time you spend on different websites.",
+    "permissions": ["tabs", "storage", "downloads", "activeTab", "webNavigation"],
     "background": {
-      "service_worker": "background.js"
+        "service_worker": "background.js"
     },
     "icons": {
-  "16": "icon16.png",
-  "48": "icon48.png",
-  "128": "icon128.png"
-},
-"action": {
-  "default_popup": "popup.html",
-  "default_icon": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
-}
-
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["blocked.html"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
   }
   
