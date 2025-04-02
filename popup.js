@@ -44,6 +44,9 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
                 list.appendChild(li);
 
                 li.querySelector(".hide-btn").addEventListener("click", function () {
+                    const clickSound = new Audio(chrome.runtime.getURL("sounds/hide.mp3"));
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(error => console.error("Playback error:", error));
                     let domain = this.getAttribute("data-domain");
                     hiddenSites[domain] = true;
                     chrome.storage.local.set({ hiddenSites }, () => {
@@ -53,17 +56,27 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
 
                 if (focusMode) {
                     li.querySelector(".block-btn").addEventListener("click", function () {
+                        const blockSound = new Audio(chrome.runtime.getURL("sounds/block.mp3"));
+                        const unblockSound = new Audio(chrome.runtime.getURL("sounds/unblock.mp3"));
+
                         let domain = this.getAttribute("data-domain");
+
                         if (blockedSites[domain]) {
                             delete blockedSites[domain];
+                            unblockSound.currentTime = 0;
+                            unblockSound.play().catch(error => console.error("Playback error:", error));
                         } else {
                             blockedSites[domain] = true;
+                            blockSound.currentTime = 0;
+                            blockSound.play().catch(error => console.error("Playback error:", error));
                         }
+
                         chrome.storage.local.set({ blockedSites }, () => {
                             this.textContent = blockedSites[domain] ? "Unblock" : "Block";
                             this.style.background = blockedSites[domain] ? "red" : "green";
                         });
                     });
+
                 }
             }
         });
@@ -72,28 +85,32 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
             list.innerHTML = "<li class='empty'>No sites with more than 0.1% time spent.</li>";
         }
     }
-    
-    
+
+
 
     // **Handle Focus Mode Toggle**
     document.getElementById("focusToggle").addEventListener("change", function () {
+        const clickSound = new Audio(chrome.runtime.getURL("sounds/switch.mp3"));
+        clickSound.currentTime = 0;
+        clickSound.play().catch(error => console.error("Playback error:", error));
         let isEnabled = this.checked;
         chrome.storage.local.set({ focusMode: isEnabled }, () => {
             window.location.reload(); // Reload to hide/show time spent
         });
         toggleDarkMode(isEnabled);
     });
+    
 
     // **Reset Hidden Sites**
     document.getElementById("resetHidden").addEventListener("click", () => {
         chrome.storage.local.set({ hiddenSites: {} }, () => {
 
-            const clickSound = new Audio(chrome.runtime.getURL("click.mp3"));
+            const clickSound = new Audio(chrome.runtime.getURL("sounds/click.mp3"));
             clickSound.currentTime = 0; // Reset sound to start
             clickSound.play().then(() => {
                 setTimeout(() => window.location.reload(), 1000); // Delay reload slightly
             }).catch(error => console.error("Playback error:", error));
-            
+
 
         });
     });
@@ -122,9 +139,9 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
 
     // **More Stats Button**
     document.getElementById("moreStats").addEventListener("click", () => {
-        const clickSound = new Audio(chrome.runtime.getURL("click.mp3"));
+        const clickSound = new Audio(chrome.runtime.getURL("sounds/click.mp3"));
         clickSound.currentTime = 0; // Reset sound to start
-    
+
         clickSound.play().then(() => {
             setTimeout(() => {
                 chrome.tabs.create({ url: chrome.runtime.getURL("stats.html") }); // Open stats page
@@ -132,7 +149,9 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
             }, 650); // Short delay to ensure the sound is heard
         }).catch(error => console.error("Playback error:", error));
     });
-    
+
+
+
 });
 
 // **Toggle Dark Mode**
@@ -155,7 +174,7 @@ function formatTime(seconds) {
 
 document.addEventListener("DOMContentLoaded", function () {
     const downloadButton = document.getElementById("downloadCsv"); // Select the specific button
-    const clickSound = new Audio(chrome.runtime.getURL("click.mp3")); // Create audio in JS
+    const clickSound = new Audio(chrome.runtime.getURL("sounds/click.mp3")); // Create audio in JS
 
     if (downloadButton) {
         downloadButton.addEventListener("click", function () {

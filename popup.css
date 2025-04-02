@@ -220,27 +220,29 @@ input:checked+.slider:before {
     background-color: #ffcc00;
 }
 
-.block-btn {
+.block-btn, .hide-btn {
     background-color: #198c19; /* Deep green */
     color: black;
-    font-size: 12px; /* Reduce font size */
+    font-size: 10px; /* Smaller font */
     font-weight: bold;
     font-family: 'Press Start 2P', sans-serif;
-    border: 3px solid black; /* Slightly thinner border */
-    padding: 6px 12px; /* Smaller padding */
+    border: 2px solid black; /* Thinner border */
+    padding: 4px 8px; /* Less padding */
     display: inline-block;
     text-align: center;
     text-transform: uppercase;
     cursor: pointer;
     box-shadow: 0px 2px 0px #C9A600;
     transition: all 0.1s ease-in-out;
+    min-width: 50px; /* Ensuring consistent width */
 }
 
-.block-btn:active {
-    transform: translateY(2px); /* Smaller movement */
+.block-btn:active, .hide-btn:active {
+    transform: translateY(1px); /* Slightly smaller movement */
     box-shadow: 0px 1px 0px #C9A600;
 }
 
-.block-btn:hover {
+.block-btn:hover, .hide-btn:hover {
     background-color: #1faa1f;
 }
+
