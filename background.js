@@ -15,15 +15,20 @@ chrome.storage.local.get(["domainTimes", "logs", "focusMode", "blockedSites"], d
 chrome.webNavigation.onBeforeNavigate.addListener(details => {
     let url = new URL(details.url);
     let domain = url.hostname.replace(/^www\./, ''); // Normalize domain
-
+    domain = domain.split('.').slice(0, -1).join('.');
+    // if(domainTimes[domain]/1000 >180)
+    // {}
     chrome.storage.local.get(["focusMode", "blockedSites"], data => {
         let focusMode = data.focusMode || false;
         let blockedSites = data.blockedSites || {};
 
         if (focusMode && blockedSites[domain]) {
+            console.log("Entered")
             // Redirect to blocked.html
-            chrome.tabs.update(details.tabId, { url: chrome.runtime.getURL("blocked.html") });
-        }
+            chrome.tabs.update({ url: "blocked.html" });
+            // chrome.tabs.update(details.tabId, { url: chrome.runtime.getURL("blocked.html") });
+        } 
+
     });
 }, { urls: ["<all_urls>"] });
 
@@ -38,7 +43,6 @@ chrome.tabs.onActivated.addListener(activeInfo => {
 
                 if (!domainTimes[domain]) domainTimes[domain] = 0;
                 domainTimes[domain] += timeSpent;
-
                 // Log the switch
                 let timestamp = new Date().toLocaleString();
                 logs.push([domain, formatTime(timeSpent), timestamp]);
@@ -51,6 +55,27 @@ chrome.tabs.onActivated.addListener(activeInfo => {
 
     activeTab = activeInfo.tabId;
     startTime = Date.now();
+    chrome.tabs.get(activeTab, (tab) => {
+        if (tab && tab.url) {
+            let url = new URL(tab.url);
+            let domain = url.hostname.replace(/^www\./, '');
+            domain = domain.split('.').slice(0, -1).join('.');
+
+            chrome.storage.local.get(["focusMode", "blockedSites"], data => {
+                let focusMode = data.focusMode || false;
+                let blockedSites = data.blockedSites || {};
+        
+                if (focusMode && blockedSites[domain]) {
+                    console.log("Entered")
+                    // Redirect to blocked.html
+                    chrome.tabs.update({ url: "blocked.html" });
+                    // chrome.tabs.update(details.tabId, { url: chrome.runtime.getURL("blocked.html") });
+                } 
+        
+            });
+            
+        }
+    });
 });
 
 // Convert time

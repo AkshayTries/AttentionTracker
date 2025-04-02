@@ -1,122 +1,120 @@
-document.addEventListener("DOMContentLoaded", () => {
-    chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "blockedSites"], data => {
-        let domainTimes = data.domainTimes || {};
-        let logs = data.logs || [];
-        let hiddenSites = data.hiddenSites || {};
-        let blockedSites = data.blockedSites || {};
-        let list = document.getElementById("tabList");
+chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "blockedSites"], data => {
+    let domainTimes = data.domainTimes || {};
+    let logs = data.logs || [];
+    let hiddenSites = data.hiddenSites || {};
+    let blockedSites = data.blockedSites || {};
+    let list = document.getElementById("tabList");
 
-        list.innerHTML = "";
+    list.innerHTML = "";
 
-        let totalTime = Object.values(domainTimes).reduce((acc, time) => acc + time, 0);
+    let totalTime = Object.values(domainTimes).reduce((acc, time) => acc + time, 0);
 
-        // Check if Focus Mode is enabled
-        let focusMode = data.focusMode || false;
-        document.getElementById("focusToggle").checked = focusMode;
-        toggleDarkMode(focusMode);
+    // Check if Focus Mode is enabled
+    let focusMode = data.focusMode || false;
+    document.getElementById("focusToggle").checked = focusMode;
+    toggleDarkMode(focusMode);
 
-        if (totalTime === 0) {
-            list.innerHTML = "<li class='empty'>No data available yet.</li>";
-        } else {
-            let sortedDomains = Object.entries(domainTimes)
-                .map(([domain, time]) => [domain.replace(/\.[^.]*$/, ''), time])
-                .sort((a, b) => b[1] - a[1]);
+    if (totalTime === 0) {
+        list.innerHTML = "<li class='empty'>No data available yet.</li>";
+    } else {
+        let sortedDomains = Object.entries(domainTimes)
+            .map(([domain, time]) => [domain.replace(/\.[^.]*$/, ''), time])
+            .sort((a, b) => b[1] - a[1]);
 
-            sortedDomains.forEach(([domain, time]) => {
-                let percentage = Math.round((time / totalTime) * 100);
-                if (hiddenSites[domain]) return;
+        sortedDomains.forEach(([domain, time]) => {
+            let percentage = Math.round((time / totalTime) * 100);
+            if (hiddenSites[domain]) return;
 
-                if (percentage >= 0.1) {
-                    let timeSpentInSeconds = Math.round(time / 1000);
-                    let formattedTime = formatTime(timeSpentInSeconds);
-                    let isBlocked = blockedSites[domain] || false;
+            if (percentage >= 0.1) {
+                let timeSpentInSeconds = Math.round(time / 1000);
+                let formattedTime = formatTime(timeSpentInSeconds);
+                let isBlocked = blockedSites[domain] || false;
 
-                    let li = document.createElement("li");
-                    li.classList.add("tab-item");
-                    li.style.background = `linear-gradient(to right, #2196F3 ${percentage}%, #ccc ${percentage}%)`;
-                    li.innerHTML = `
-                        <strong title="${domain}">${domain}</strong>
-                        ${!focusMode ? `<span class="time">${formattedTime} (${percentage}%)</span>` : ""}
-                        <button class="hide-btn" data-domain="${domain}">Hide</button>
-                        ${focusMode ? `<button class="block-btn" data-domain="${domain}" style="background:${isBlocked ? 'red' : 'green'};">
-                            ${isBlocked ? 'Unblock' : 'Block'}
-                        </button>` : ""}
-                    `;
-                    list.appendChild(li);
+                let li = document.createElement("li");
+                li.classList.add("tab-item");
+                li.style.background = `linear-gradient(to right, #2196F3 ${percentage}%, #ccc ${percentage}%)`;
+                li.innerHTML = `
+                    <strong title="${domain}">${domain}</strong>
+                    ${!focusMode ? `<span class="time">${formattedTime} (${percentage}%)</span>` : ""}
+                    <button class="hide-btn" data-domain="${domain}">Hide</button>
+                    ${focusMode ? `<button class="block-btn" data-domain="${domain}" style="background:${isBlocked ? 'red' : 'green'};">
+                        ${isBlocked ? 'Unblock' : 'Block'}
+                    </button>` : ""}
+                `;
+                list.appendChild(li);
 
-                    li.querySelector(".hide-btn").addEventListener("click", function () {
+                li.querySelector(".hide-btn").addEventListener("click", function () {
+                    let domain = this.getAttribute("data-domain");
+                    hiddenSites[domain] = true;
+                    chrome.storage.local.set({ hiddenSites }, () => {
+                        li.remove();
+                    });
+                });
+
+                if (focusMode) {
+                    li.querySelector(".block-btn").addEventListener("click", function () {
                         let domain = this.getAttribute("data-domain");
-                        hiddenSites[domain] = true;
-                        chrome.storage.local.set({ hiddenSites }, () => {
-                            li.remove();
+                        if (blockedSites[domain]) {
+                            delete blockedSites[domain];
+                        } else {
+                            blockedSites[domain] = true;
+                        }
+                        chrome.storage.local.set({ blockedSites }, () => {
+                            this.textContent = blockedSites[domain] ? "Unblock" : "Block";
+                            this.style.background = blockedSites[domain] ? "red" : "green";
                         });
                     });
-
-                    if (focusMode) {
-                        li.querySelector(".block-btn").addEventListener("click", function () {
-                            let domain = this.getAttribute("data-domain");
-                            if (blockedSites[domain]) {
-                                delete blockedSites[domain];
-                            } else {
-                                blockedSites[domain] = true;
-                            }
-                            chrome.storage.local.set({ blockedSites }, () => {
-                                this.textContent = blockedSites[domain] ? "Unblock" : "Block";
-                                this.style.background = blockedSites[domain] ? "red" : "green";
-                            });
-                        });
-                    }
                 }
-            });
-
-            if (list.children.length === 0) {
-                list.innerHTML = "<li class='empty'>No sites with more than 0.1% time spent.</li>";
             }
+        });
+
+        if (list.children.length === 0) {
+            list.innerHTML = "<li class='empty'>No sites with more than 0.1% time spent.</li>";
         }
+    }
 
-        // **Handle Focus Mode Toggle**
-        document.getElementById("focusToggle").addEventListener("change", function () {
-            let isEnabled = this.checked;
-            chrome.storage.local.set({ focusMode: isEnabled }, () => {
-                window.location.reload(); // Reload to hide/show time spent
+    // **Handle Focus Mode Toggle**
+    document.getElementById("focusToggle").addEventListener("change", function () {
+        let isEnabled = this.checked;
+        chrome.storage.local.set({ focusMode: isEnabled }, () => {
+            window.location.reload(); // Reload to hide/show time spent
+        });
+        toggleDarkMode(isEnabled);
+    });
+
+    // **Reset Hidden Sites**
+    document.getElementById("resetHidden").addEventListener("click", () => {
+        chrome.storage.local.set({ hiddenSites: {} }, () => {
+            window.location.reload(); // Refresh UI
+        });
+    });
+
+    // **Download CSV Button**
+    document.getElementById("downloadCsv").addEventListener("click", () => {
+        chrome.storage.local.get("logs", data => {
+            let logs = data.logs || [];
+            let csvContent = "Website,Time Spent,Switched At\n";
+            logs.forEach(row => {
+                csvContent += row.join(",") + "\n";
             });
-            toggleDarkMode(isEnabled);
-        });
 
-        // **Reset Hidden Sites**
-        document.getElementById("resetHidden").addEventListener("click", () => {
-            chrome.storage.local.set({ hiddenSites: {} }, () => {
-                window.location.reload(); // Refresh UI
+            let blob = new Blob([csvContent], { type: "text/csv" });
+            let url = URL.createObjectURL(blob);
+
+            chrome.downloads.download({
+                url: url,
+                filename: "tab_activity.csv",
+                saveAs: true
+            }, () => {
+                URL.revokeObjectURL(url);
             });
         });
+    });
 
-        // **Download CSV Button**
-        document.getElementById("downloadCsv").addEventListener("click", () => {
-            chrome.storage.local.get("logs", data => {
-                let logs = data.logs || [];
-                let csvContent = "Website,Time Spent,Switched At\n";
-                logs.forEach(row => {
-                    csvContent += row.join(",") + "\n";
-                });
-
-                let blob = new Blob([csvContent], { type: "text/csv" });
-                let url = URL.createObjectURL(blob);
-
-                chrome.downloads.download({
-                    url: url,
-                    filename: "tab_activity.csv",
-                    saveAs: true
-                }, () => {
-                    URL.revokeObjectURL(url);
-                });
-            });
-        });
-
-        // **More Stats Button**
-        document.getElementById("moreStats").addEventListener("click", () => {
-            chrome.tabs.create({ url: chrome.runtime.getURL("stats.html") });
-            window.close();
-        });
+    // **More Stats Button**
+    document.getElementById("moreStats").addEventListener("click", () => {
+        chrome.tabs.create({ url: chrome.runtime.getURL("stats.html") });
+        window.close();
     });
 });
 
