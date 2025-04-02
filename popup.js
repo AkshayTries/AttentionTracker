@@ -72,6 +72,8 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
             list.innerHTML = "<li class='empty'>No sites with more than 0.1% time spent.</li>";
         }
     }
+    
+    
 
     // **Handle Focus Mode Toggle**
     document.getElementById("focusToggle").addEventListener("change", function () {
@@ -85,7 +87,14 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
     // **Reset Hidden Sites**
     document.getElementById("resetHidden").addEventListener("click", () => {
         chrome.storage.local.set({ hiddenSites: {} }, () => {
-            window.location.reload(); // Refresh UI
+
+            const clickSound = new Audio(chrome.runtime.getURL("click.mp3"));
+            clickSound.currentTime = 0; // Reset sound to start
+            clickSound.play().then(() => {
+                setTimeout(() => window.location.reload(), 1000); // Delay reload slightly
+            }).catch(error => console.error("Playback error:", error));
+            
+
         });
     });
 
@@ -113,9 +122,17 @@ chrome.storage.local.get(["domainTimes", "logs", "hiddenSites", "focusMode", "bl
 
     // **More Stats Button**
     document.getElementById("moreStats").addEventListener("click", () => {
-        chrome.tabs.create({ url: chrome.runtime.getURL("stats.html") });
-        window.close();
+        const clickSound = new Audio(chrome.runtime.getURL("click.mp3"));
+        clickSound.currentTime = 0; // Reset sound to start
+    
+        clickSound.play().then(() => {
+            setTimeout(() => {
+                chrome.tabs.create({ url: chrome.runtime.getURL("stats.html") }); // Open stats page
+                window.close(); // Close popup after opening the new tab
+            }, 650); // Short delay to ensure the sound is heard
+        }).catch(error => console.error("Playback error:", error));
     });
+    
 });
 
 // **Toggle Dark Mode**
@@ -135,3 +152,18 @@ function formatTime(seconds) {
     let hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const downloadButton = document.getElementById("downloadCsv"); // Select the specific button
+    const clickSound = new Audio(chrome.runtime.getURL("click.mp3")); // Create audio in JS
+
+    if (downloadButton) {
+        downloadButton.addEventListener("click", function () {
+            clickSound.currentTime = 0; // Reset sound to start
+            clickSound.play().catch(error => console.error("Playback error:", error));
+        });
+    } else {
+        console.error("Button with ID 'downloadCsv' not found.");
+    }
+});
+
